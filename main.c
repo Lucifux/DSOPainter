@@ -9,7 +9,7 @@
 #include <windows.h>
 #include "raylib.h"
 
-#define IMAGE_PATH "C:\\03 - C Projekte\\0_example_files\\metrohm.ppm"
+#define IMAGE_PATH "C:\\03 - C Projekte\\0_example_files\\lucas.ppm"
 #define SERIAL_PORT "\\\\.\\COM4"
 #define SERIAL_BAUD CBR_115200
 #define COLUMN_EMPTY 255
@@ -84,7 +84,7 @@ void transmit_columns(HANDLE serial, column_t* columns, header_t header, uint8_t
 
     for (uint8_t c = 0; c < num_columns; c++){
         for (uint16_t x = 0; x < header.w; x++){
-            column_t col = ((column_t*)columns)[(uint32_t)x * num_columns + c];
+            column_t col = columns[x * num_columns + c];
             uint8_t b = col.b;
             uint8_t t = col.t;
 
@@ -125,8 +125,8 @@ header_t read_header(FILE* file) {
     unsigned short w = 0, h = 0;
    
     sscanf(buffer, "%hu %hu", &w, &h);
-    header.w = (uint16_t)w;
-    header.h = (uint16_t)h;
+    header.w = w;
+    header.h = h;
     
     fgets(buffer, sizeof(buffer), file);
     header.max_color_value = (uint8_t)atoi(buffer);
@@ -139,7 +139,7 @@ pixel_t* get_pixels(FILE* file, header_t header) {
     uint32_t current_line = 0;
     uint16_t color_accumulator = 0;
     uint32_t total_pixels = (uint32_t)header.w * header.h;
-    pixel_t* pixels = (pixel_t*)malloc(sizeof(pixel_t) * total_pixels);
+    pixel_t* pixels = malloc(sizeof(pixel_t) * total_pixels);
 
     if (pixels == NULL) {
         perror("Error allocating memory for image");
@@ -187,7 +187,7 @@ pixel_t* crop_image(pixel_t* pixels, header_t* header) {
 
     uint16_t new_w = max_x - min_x + 1;
     uint16_t new_h = max_y - min_y + 1;
-    pixel_t* cropped = (pixel_t*)malloc(sizeof(pixel_t) * new_w * new_h);
+    pixel_t* cropped = malloc(sizeof(pixel_t) * new_w * new_h);
     if (cropped == NULL) {
         perror("Error allocating memory for cropped image");
         exit(EXIT_FAILURE);
@@ -206,7 +206,7 @@ pixel_t* crop_image(pixel_t* pixels, header_t* header) {
 }
 
 pixel_t* resize_image(pixel_t* pixels, header_t* header, uint16_t new_w, uint16_t new_h) {
-    pixel_t* resized = (pixel_t*)malloc(sizeof(pixel_t) * new_w * new_h);
+    pixel_t* resized = malloc(sizeof(pixel_t) * new_w * new_h);
     if (resized == NULL) {
         perror("Error allocating memory for resized image");
         exit(EXIT_FAILURE);
@@ -252,13 +252,13 @@ uint8_t get_num_columns(pixel_t* pixels, header_t header){
 }
 
 column_t* get_columns(pixel_t* pixels, header_t header, uint8_t num_columns) {
-    column_t* columns = (column_t*)malloc(sizeof(column_t) * num_columns * header.w);
+    column_t* columns = malloc(sizeof(column_t) * num_columns * header.w);
     if (columns == NULL) {
         perror("Error allocating memory for columns");
         exit(EXIT_FAILURE);
     }
 
-    for (uint32_t i = 0; i < (uint32_t)num_columns * header.w; i++) {
+    for (uint32_t i = 0; i < num_columns * header.w; i++) {
         columns[i].b = COLUMN_EMPTY;
         columns[i].t = COLUMN_EMPTY;
     }
@@ -271,11 +271,11 @@ column_t* get_columns(pixel_t* pixels, header_t header, uint8_t num_columns) {
             if (pixels[y * header.w + x]){
                 if (!in_column){
                     in_column = true;
-                    uint32_t base = ((uint32_t)x * num_columns + current_column);
-                    columns[base].b = (uint8_t)y;
-                    columns[base].t = (uint8_t)y;
+                    uint32_t base = (x * num_columns + current_column);
+                    columns[base].b = y > 0 ? y + 50 : 0;
+                    columns[base].t = y > 0 ? y + 50 : 0;
                 }
-                columns[((uint32_t)x * num_columns + current_column)].t = (uint8_t)y;
+                columns[x * num_columns + current_column].t = y;
             }else{
                 if (in_column){
                     in_column = false;
@@ -294,7 +294,7 @@ void draw_dso_image(column_t* columns, header_t header, uint8_t num_columns) {
     ClearBackground(WHITE);
     for (int x = 0; x < header.w * 2; x++){
         for (int c = 0; c < num_columns; c++){
-            column_t col = columns[(uint32_t)(x / 2) * num_columns + c];
+            column_t col = columns[(x / 2) * num_columns + c];
             uint8_t b = col.b;
             uint8_t t = col.t;
 
