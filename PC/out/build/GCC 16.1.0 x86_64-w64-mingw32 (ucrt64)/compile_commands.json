@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/00 - Coding Projects/05 - DSOPainter/PC/out/build/GCC 16.1.0 x86_64-w64-mingw32 (ucrt64)",
+  "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe -g -o CMakeFiles\\DSOPainter.dir\\main.c.obj -c \"C:\\00 - Coding Projects\\05 - DSOPainter\\PC\\main.c\"",
+  "file": "C:/00 - Coding Projects/05 - DSOPainter/PC/main.c",
+  "output": "C:/00 - Coding Projects/05 - DSOPainter/PC/out/build/GCC 16.1.0 x86_64-w64-mingw32 (ucrt64)/CMakeFiles/DSOPainter.dir/main.c.obj"
+}
+]
